@@ -1,5 +1,8 @@
 package org.datasyslab.shapefilebuild;
 
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.Point;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.Transaction;
 import org.geotools.data.collection.ListFeatureCollection;
@@ -9,7 +12,9 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.feature.SchemaException;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -17,6 +22,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +32,7 @@ import java.util.Map;
  */
 public abstract class ShapeGenerator {
 
-    public abstract void buildRandomShapeFile(int shapecount, String path) throws SchemaException, IOException;
+    protected abstract Geometry generateRandomGeometry(GeometryFactory geometryFactory);
 
     /** configuration map of shapefile builder */
     protected Map<String, Object> generatorConf = null;
@@ -43,6 +49,24 @@ public abstract class ShapeGenerator {
         if(generatorConf.containsKey(name)){
             generatorConf.put(name, value);
         }
+    }
+
+    public void buildRandomShapeFile(int shapecount, String path) throws SchemaException, IOException {
+        //create descriptor of shpaes
+        final SimpleFeatureType TYPE = createFeatureType(Point.class);
+        //create feature builder and collection
+        List<SimpleFeature> features = new ArrayList<SimpleFeature>();
+        GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
+        SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(TYPE);
+        //create random point and add to features.
+        for(int i = 0;i < shapecount; ++i){
+            Geometry point = generateRandomGeometry(geometryFactory);
+            System.out.println(point.toText());
+            featureBuilder.add(point);
+            SimpleFeature feature = featureBuilder.buildFeature(null);
+            features.add(feature);
+        }
+        outputFile(TYPE, features, path);
     }
 
     protected void outputFile(final SimpleFeatureType TYPE, List<SimpleFeature> features, String path) throws IOException {
@@ -105,6 +129,7 @@ public abstract class ShapeGenerator {
 
         return LOCATION;
     }
+
 
 
 }

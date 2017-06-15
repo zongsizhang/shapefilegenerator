@@ -5,7 +5,7 @@ package org.datasyslab.shapefilebuild;
  */
 public class Main {
     public static void main(String[] args){
-        ShapeGenerator generator = new PointGenerator();
+        ShapeGenerator generator = new MultiPointGenerator();
         try {
             generator.buildRandomShapeFile(100, "map");
         }catch(Exception e){
