@@ -43,7 +43,6 @@ public class GenerateUtils {
             System.out.println("Error: cannot replace " + csvFile);
             System.exit(0);
         }
-
         return newFile;
     }
 }
