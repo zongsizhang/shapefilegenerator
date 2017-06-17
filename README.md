@@ -7,6 +7,8 @@ Currently support function:
 generate random Geometry
 
 currently support geometry type:
-Point
-MultiPoint
+- Point
+- MultiPoint
+- Polyline
+
 
