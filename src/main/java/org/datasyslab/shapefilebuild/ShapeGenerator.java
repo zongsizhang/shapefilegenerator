@@ -37,6 +37,9 @@ public abstract class ShapeGenerator {
     /** configuration map of shapefile builder */
     protected Map<String, Object> generatorConf = null;
 
+    /** current class of shape */
+    protected Class shapeClass;
+
     public Map<String, Object> getGeneratorConf() {
         return generatorConf;
     }
@@ -53,16 +56,16 @@ public abstract class ShapeGenerator {
 
     public void buildRandomShapeFile(int shapecount, String path) throws SchemaException, IOException {
         //create descriptor of shpaes
-        final SimpleFeatureType TYPE = createFeatureType(Point.class);
+        final SimpleFeatureType TYPE = createFeatureType(shapeClass);
         //create feature builder and collection
         List<SimpleFeature> features = new ArrayList<SimpleFeature>();
         GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
         SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(TYPE);
         //create random point and add to features.
         for(int i = 0;i < shapecount; ++i){
-            Geometry point = generateRandomGeometry(geometryFactory);
-            System.out.println(point.toText());
-            featureBuilder.add(point);
+            Geometry geometry = generateRandomGeometry(geometryFactory);
+            System.out.println(geometry.toText());
+            featureBuilder.add(geometry);
             SimpleFeature feature = featureBuilder.buildFeature(null);
             features.add(feature);
         }

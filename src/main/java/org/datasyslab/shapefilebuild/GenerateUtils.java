@@ -23,6 +23,12 @@ public class GenerateUtils {
         return lower + (random * (upper - lower));
     }
 
+    public static int generateRangeInt(int lower, int upper){
+        if(lower >= upper) return upper;
+        int random = new Random().nextInt(upper - lower) + lower;
+        return random;
+    }
+
     public static File getNewShapeFile(File csvFile) {
         String path = csvFile.getAbsolutePath();
         String newPath = path.substring(0, path.length() - 4) + ".shp";
