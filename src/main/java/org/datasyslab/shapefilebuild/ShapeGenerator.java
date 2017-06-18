@@ -22,10 +22,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by zongsizhang on 6/14/17.
@@ -39,6 +36,9 @@ public abstract class ShapeGenerator {
 
     /** current class of shape */
     protected Class shapeClass;
+
+    /** dbf attributes generator */
+    private DBFGenerator dbfGenerator = null;
 
     public Map<String, Object> getGeneratorConf() {
         return generatorConf;
@@ -56,16 +56,22 @@ public abstract class ShapeGenerator {
 
     public void buildRandomShapeFile(int shapecount, String path) throws SchemaException, IOException {
         //create descriptor of shpaes
-        final SimpleFeatureType TYPE = createFeatureType(shapeClass);
+        dbfGenerator = new DBFGenerator();
+        final SimpleFeatureType TYPE = createFeatureType(shapeClass, dbfGenerator.getAttributeMap());
         //create feature builder and collection
         List<SimpleFeature> features = new ArrayList<SimpleFeature>();
         GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
         SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(TYPE);
+
         //create random point and add to features.
         for(int i = 0;i < shapecount; ++i){
             Geometry geometry = generateRandomGeometry(geometryFactory);
             System.out.println(geometry.toText());
             featureBuilder.add(geometry);
+            Object[] attributes = dbfGenerator.generateNextAttributeSet();
+            for(int it = 0;it < attributes.length; ++it){
+                featureBuilder.add(attributes[it]);
+            }
             SimpleFeature feature = featureBuilder.buildFeature(null);
             features.add(feature);
         }
@@ -116,7 +122,7 @@ public abstract class ShapeGenerator {
         }
     }
 
-    protected static SimpleFeatureType createFeatureType(Class geometryClass) {
+    protected static SimpleFeatureType createFeatureType(Class geometryClass, HashMap<String, Class> attributes) {
 
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
         builder.setName("Location");
@@ -124,8 +130,15 @@ public abstract class ShapeGenerator {
 
         // add attributes in order
         builder.add("the_geom", geometryClass);
-        //builder.length(15).add("Name", String.class); // <- 15 chars width for name field
-        //builder.add("number",Integer.class);
+        Iterator it = attributes.entrySet().iterator();
+        while(it.hasNext()){
+            Map.Entry<String, Class> entry = (Map.Entry<String, Class>)it.next();
+            if(entry.getValue() == String.class){
+                builder.length(DBFGenerator.MAX_STR_ATTR_LEN).add(entry.getKey(), entry.getValue());
+            }else{
+                builder.add(entry.getKey(), entry.getValue());
+            }
+        }
 
         // build the type
         final SimpleFeatureType LOCATION = builder.buildFeatureType();

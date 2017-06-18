@@ -51,4 +51,15 @@ public class GenerateUtils {
         }
         return newFile;
     }
+
+    private final static String wordList = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+    public static String generateRandomString(int length){
+        char[] newStr = new char[length];
+        for(int i = 0;i < length; ++i){
+            int randId = generateRangeInt(0, length-1);
+            newStr[i] = wordList.charAt(randId);
+        }
+        return new String(newStr);
+    }
 }
